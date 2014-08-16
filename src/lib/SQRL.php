@@ -28,7 +28,7 @@ abstract class SQRL
      */
     public static function getChallenge($encode = false)
     {
-        $challenge = Secure::random_bytes(20);
+        $challenge = Secure::random_bytes(32);
         if($encode) {
             return base64_encode($challenge);
         }
