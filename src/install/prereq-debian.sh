@@ -4,7 +4,7 @@ if [[ $EUID -ne 0 ]]; then
     echo "You need to be root to install prerequisites"
 fi
 
-apt-get install -y php5-dev
+apt-get update && apt-get install -y php5-dev
 
 # Let's install scrypt if it doesn't already exist
 SCRYPTINSTALLED=`rgrep scrypt.so /etc/php5 | (wc -l)` >/dev/null 2>&1
