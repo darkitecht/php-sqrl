@@ -11,16 +11,32 @@ abstract class Secure
      * @param integer $bytes - Number of bytes needed
      * @return string
      */
-    public static function random($bytes)
+    public static function random_bytes($bytes)
     {
         if (!is_int($bytes) || $bytes < 1) {
             throw new Exception("\$bytes must be a positive integer greater than zero.");
-            return false;
         }
-        if (function_exists('\mcrypt_create_iv')) {
+        if (is_readable('/dev/urandom')) {
+            $fp = fopen('/dev/urandom', 'rb');
+            if ($fp !== false) {
+                $buf = fread($fp, $bytes);
+                fclose($fp);
+                if ($buf !== false) {
+                    // Sanity check:
+                    if (strlen($buf) === $bytes) {
+                        return $buf;
+                    }
+                }
+            }
+        }
+        if (function_exists('mcrypt_create_iv') && defined('MCRYPT_DEV_URANDOM')) {
+            // mcrypt handles Windows' lack of /dev/urandom with some sanity
             return mcrypt_create_iv($bytes, MCRYPT_DEV_URANDOM);
         }
-        return openssl_random_pseudo_bytes($bytes);
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            return openssl_random_pseudo_bytes($bytes);
+        }
+        throw new Exception("No suitable random number generator available.");
     }
 
     /**
@@ -47,7 +63,7 @@ abstract class Secure
 
         // Let's grab a random byte that falls within our range
         do {
-            $rval = intval(self::random($need_bytes) & $mask);
+            $rval = intval(self::random_bytes($need_bytes) & $mask);
         } while($rval> $range);
         // We now have a random value in the range between $min and $max, so...
 
