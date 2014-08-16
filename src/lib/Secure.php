@@ -53,18 +53,26 @@ abstract class Secure
         $rval = 0;
         $range = $max - $min;
 
-        $need_bits = ceil(log($range, 2));
+        $need_bits = intval(ceil(log($range, 2)));
 
         // Create a bitmask
         $mask = intval( pow(2, $need_bits) - 1); // 7776 -> 8191
 
         // Number of random bytes to fetch
-        $need_bytes = ceil($need_bits / 8);
+        $need_bytes = intval(ceil($need_bits / 8));
+        if ($need_bytes > PHP_INT_SIZE) {
+            throw new Exception("The desired integer is larger than PHP_INT_SIZE");
+        }
 
         // Let's grab a random byte that falls within our range
         do {
-            $rval = intval(self::random_bytes($need_bytes) & $mask);
-        } while($rval> $range);
+            $rval = 0;
+            for($i = 0; $i < $need_bytes; ++$i) {
+                $t = ord(self::random_bytes(1));
+                $rval += intval(pow(2, $need_bytes - $i)) * $t;
+            }
+            $rval = $rval & $mask;
+        } while($rval >= $range);
         // We now have a random value in the range between $min and $max, so...
 
         // Let's return the random value + the minimum value
@@ -79,8 +87,7 @@ abstract class Secure
      */
     public static function compare($a, $b)
     {
-        static $he = function_exists('hash_equals');
-        if ($he) {
+        if (function_exists('hash_equals')) {
             return hash_equals($a, $b);
         }
         $diff = strlen($a) ^ strlen($b);
