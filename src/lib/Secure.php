@@ -45,7 +45,7 @@ abstract class Secure
      * @param int $min - minimum value
      * @param int $max - maximum value
      */
-    public static function random_int($min, $max) {
+    public static function random_int($min = 0, $max = PHP_INT_MAX) {
         if ($max <= $min) {
             throw new Exception("Invalid parameters passed to random_int()");
         }
@@ -69,7 +69,7 @@ abstract class Secure
             $rval = 0;
             for($i = 0; $i < $need_bytes; ++$i) {
                 $t = ord(self::random_bytes(1));
-                $rval += intval(pow(2, $need_bytes - $i)) * $t;
+                $rval += intval(pow(256, $i)) * $t;
             }
             $rval = $rval & $mask;
         } while($rval >= $range);
