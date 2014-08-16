@@ -1,0 +1,3 @@
+[submodule "src/lib/Salt"]
+	path = src/lib/Salt
+	url = https://github.com/devi/Salt.git
