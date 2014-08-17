@@ -40,46 +40,6 @@ abstract class Secure
     }
 
     /**
-     * Get a cryptographically secure random integer within a given range
-     *
-     * @param int $min - minimum value
-     * @param int $max - maximum value
-     */
-    public static function random_int($min = 0, $max = PHP_INT_MAX) {
-        if ($max <= $min) {
-            throw new Exception("Invalid parameters passed to random_int()");
-        }
-
-        $rval = 0;
-        $range = $max - $min;
-
-        $need_bits = intval(ceil(log($range, 2)));
-
-        // Create a bitmask
-        $mask = intval( pow(2, $need_bits) - 1); // 7776 -> 8191
-
-        // Number of random bytes to fetch
-        $need_bytes = intval(ceil($need_bits / 8));
-        if ($need_bytes > PHP_INT_SIZE) {
-            throw new Exception("The desired integer is larger than PHP_INT_SIZE");
-        }
-
-        // Let's grab a random byte that falls within our range
-        do {
-            $rval = 0;
-            for($i = 0; $i < $need_bytes; ++$i) {
-                $t = ord(self::random_bytes(1));
-                $rval += intval(pow(256, $i)) * $t;
-            }
-            $rval = $rval & $mask;
-        } while($rval >= $range);
-        // We now have a random value in the range between $min and $max, so...
-
-        // Let's return the random value + the minimum value
-        return $rval + $min;
-    }
-
-    /**
      * Compare strings so that timing attacks are not feasible
      * @param string $a - hash
      * @param string $b - hash
@@ -101,16 +61,5 @@ abstract class Secure
         $nonce = self::random(32);
         return hash_hmac('sha256', $a, $nonce) === hash_hmac('sha256', $b, $nonce);
         */
-    }
-
-    /**
-     * Wrapper for htmlentities()
-     *
-     * @param string $untrusted
-     * @return string
-     */
-    public static function noHTML($untrusted)
-    {
-        return htmlentities($untrusted, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
