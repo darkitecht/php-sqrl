@@ -26,12 +26,30 @@ abstract class SQRL
      * @param boolean $encode - Base64-encode the result?
      * @return string
      */
-    public static function getChallenge($encode = false)
+    public static function getChallengeString($encode = false)
     {
         $challenge = Secure::random_bytes(32);
         if($encode) {
             return base64_encode($challenge);
         }
         return $challenge;
+    }
+
+    public static function getChallengeQRCode(
+        $string = null,
+        $size = 300,
+        $padding = 10
+    ) {
+        static $qrCode = null;
+        if (empty($qrCode)) {
+            $qrCode = new Endroid\QrCode\QrCode();
+        }
+        if (empty($string)) {
+            $string = self::getChallengeString(true);
+        }
+        $qrCode->setText($string);
+        $qrCode->setSize($size);
+        $qrCode->setPadding($padding);
+        return $qrcode->render();
     }
 }
